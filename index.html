@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quotex Signal Bot</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --secondary: #a29bfe;
+      --success: #00b894;
+      --danger: #d63031;
+      --dark: #1a1a2e;
+      --light: #f5f6fa;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: var(--light);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: rgba(30, 30, 50, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #fff;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--secondary);
+      font-size: 14px;
+    }
+    
+    select {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: none;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 15px;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 15px;
+    }
+    
+    select option {
+      background: #2a2a3a;
+      color: #fff;
+      padding: 10px;
+    }
+    
+    select option:nth-child(1) { color: #00b894; } /* USD BDT OTC */
+    select option:nth-child(2) { color: #a29bfe; } /* USD DZD OTC */
+    select option:nth-child(3) { color: #fdcb6e; } /* USD INR OTC */
+    select option:nth-child(4) { color: #e17055; } /* USD MXN OTC */
+    select option:nth-child(5) { color: #74b9ff; } /* USD PKR OTC */
+    select option:nth-child(6) { color: #fd79a8; } /* USD TRY OTC */
+    select option:nth-child(7) { color: #55efc4; } /* USD BRL OTC */
+    
+    select:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--secondary);
+    }
+    
+    .current-pair {
+      background: rgba(108, 92, 231, 0.15);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      margin: 25px 0;
+      font-weight: 500;
+      border-left: 4px solid var(--primary);
+      color: #fdcb6e; /* Gold color for current pair */
+    }
+    
+    .buttons {
+      display: flex;
+      gap: 15px;
+      margin: 25px 0;
+    }
+    
+    button {
+      flex: 1;
+      padding: 15px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    #buy {
+      background-color: var(--success);
+      color: white;
+    }
+    
+    #buy:hover {
+      background-color: #009d7e;
+      transform: translateY(-2px);
+    }
+    
+    #sell {
+      background-color: var(--danger);
+      color: white;
+    }
+    
+    #sell:hover {
+      background-color: #c0392b;
+      transform: translateY(-2px);
+    }
+    
+    .inactive {
+      background-color: #3a3a5a !important;
+      color: #aaa !important;
+    }
+    
+    .countdown-container {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      border-radius: 10px;
+      margin: 25px 0;
+      text-align: center;
+    }
+    
+    #countdown {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      margin-top: 15px;
+      overflow: hidden;
+    }
+    
+    .progress {
+      height: 100%;
+      background: linear-gradient(to right, #6c5ce7, #a29bfe);
+      width: 100%;
+      border-radius: 3px;
+      transition: width 1s linear;
+    }
+    
+    #next-trade {
+      width: 100%;
+      background: linear-gradient(to right, #6c5ce7, #a29bfe);
+      color: white;
+      font-weight: 600;
+    }
+    
+    #next-trade:hover {
+      transform: translateY(-2px);
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .buttons {
+        flex-direction: row;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-robot"></i> Quotex Signal Bot</h1>
+
+    <div class="form-group">
+      <label for="pair"><i class="fas fa-exchange-alt"></i> Select Trade Pair:</label>
+      <select id="pair">
+        <option>USD BDT OTC</option>
+        <option>USD DZD OTC</option>
+        <option>USD INR OTC</option>
+        <option>USD MXN OTC</option>
+        <option>USD PKR OTC</option>
+        <option>USD TRY OTC</option>
+        <option>USD BRL OTC</option>
+      </select>
+    </div>
+
+    <div class="current-pair" id="current-pair">
+      <i class="fas fa-chart-line"></i> Your trade: USD INR OTC
+    </div>
+
+    <div class="buttons">
+      <button id="buy" class="inactive"><i class="fas fa-arrow-up"></i> Buy</button>
+      <button id="sell" class="inactive"><i class="fas fa-arrow-down"></i> Sell</button>
+    </div>
+
+    <div class="countdown-container">
+      <p id="countdown">New trade available!</p>
+      <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+      </div>
+    </div>
+    
+    <button id="next-trade"><i class="fas fa-sync-alt"></i> Get Next Trade</button>
+  </div>
+
+  <script>
+    const pairSelect = document.getElementById("pair");
+    const currentPairText = document.getElementById("current-pair");
+    const buyBtn = document.getElementById("buy");
+    const sellBtn = document.getElementById("sell");
+    const countdownText = document.getElementById("countdown");
+    const nextTradeBtn = document.getElementById("next-trade");
+    const progressBar = document.getElementById("progress");
+
+    let cooldown = false;
+    let countdown = 60;
+    let interval;
+
+    // Color mapping for currency pairs
+    const pairColors = {
+      'USD BDT OTC': '#00b894',
+      'USD DZD OTC': '#a29bfe',
+      'USD INR OTC': '#fdcb6e',
+      'USD MXN OTC': '#e17055',
+      'USD PKR OTC': '#74b9ff',
+      'USD TRY OTC': '#fd79a8',
+      'USD BRL OTC': '#55efc4'
+    };
+
+    pairSelect.addEventListener("change", () => {
+      const selectedPair = pairSelect.value;
+      currentPairText.innerHTML = `<i class="fas fa-chart-line"></i> Your trade: ${selectedPair}`;
+      currentPairText.style.color = pairColors[selectedPair] || '#fdcb6e';
+    });
+
+    function resetButtons() {
+      buyBtn.className = "inactive";
+      sellBtn.className = "inactive";
+    }
+
+    function startCountdown() {
+      cooldown = true;
+      countdown = 60;
+      countdownText.textContent = `Next trade in: ${countdown}s`;
+      progressBar.style.width = '100%';
+      
+      progressBar.style.transition = 'none';
+      void progressBar.offsetWidth;
+      progressBar.style.transition = 'width 1s linear';
+
+      interval = setInterval(() => {
+        countdown--;
+        countdownText.textContent = `Next trade in: ${countdown}s`;
+        progressBar.style.width = `${(countdown/60)*100}%`;
+        
+        if (countdown === 0) {
+          clearInterval(interval);
+          cooldown = false;
+          countdownText.textContent = "New trade available!";
+          progressBar.style.width = '0%';
+          resetButtons();
+        }
+      }, 1000);
+    }
+
+    function generateSignal() {
+      if (cooldown) return;
+
+      resetButtons();
+      const signal = Math.random() < 0.5 ? "Buy" : "Sell";
+
+      if (signal === "Buy") {
+        buyBtn.className = "";
+        buyBtn.classList.add("active-buy");
+      } else {
+        sellBtn.className = "";
+        sellBtn.classList.add("active-sell");
+      }
+
+      startCountdown();
+    }
+
+    nextTradeBtn.addEventListener("click", generateSignal);
+    
+    // Initialize with USD INR OTC selected
+    pairSelect.selectedIndex = 2;
+    currentPairText.style.color = '#fdcb6e';
+    resetButtons();
+  </script>
+</body>
+</html>
+<script type='text/javascript' src='//pl26741134.profitableratecpm.com/16/ff/66/16ff6682f7520a62710c6c1087adf2e8.js'></script>
